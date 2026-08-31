@@ -14,8 +14,14 @@ import {
   ShieldCheck, 
   Terminal,
   Activity,
-  ArrowRight
+  ArrowRight,
+  ArrowUpRight,
+  Sparkles,
+  Zap,
+  Smartphone,
+  Check
 } from 'lucide-react';
+import { BrandMarkSvg, BrandBackground } from '@/lib/brand';
 
 interface OrderData {
   id: string;
@@ -27,6 +33,7 @@ interface OrderData {
   status: 'PENDING' | 'VERIFIED' | 'EXPIRED';
   matchedUtr?: string;
   matchedBank?: string;
+  matchTier?: string;
 }
 
 export default function TestConsole() {
@@ -69,7 +76,7 @@ export default function TestConsole() {
     eventSource.addEventListener('payment_verified', (e) => {
       const data = JSON.parse(e.data);
       setActiveOrder((prev) => (prev && prev.id === data.order.id ? data.order : prev));
-      addLog(`✅ Verified order ${data.order.id} via ${data.alert.bank} (UTR: ${data.alert.utr})`, 'verified');
+      addLog(`Verified order ${data.order.id} via ${data.alert.bank} (UTR: ${data.alert.utr})`, 'verified');
     });
 
     eventSource.addEventListener('log', (e) => {
@@ -87,8 +94,8 @@ export default function TestConsole() {
     setLogs((prev) => [{ id: Math.random().toString(36).slice(2), time, message, type }, ...prev.slice(0, 40)]);
   };
 
-  const handleCreateOrder = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCreateOrder = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setIsCreatingOrder(true);
     try {
       const res = await fetch('/api/orders/create', {
@@ -131,12 +138,12 @@ export default function TestConsole() {
       });
       const data = await res.json();
       if (data.success) {
-        setImapStatus(`✅ Connected! Active INBOX (${data.mailboxCount} messages)`);
+        setImapStatus(`Connected to ${gmailAddress}! (${data.mailboxCount} emails in INBOX)`);
       } else {
-        setImapStatus(`❌ ${data.message} ${data.error ? `(${data.error})` : ''}`);
+        setImapStatus(`Failed: ${data.message} ${data.error ? `(${data.error})` : ''}`);
       }
     } catch (err: any) {
-      setImapStatus(`❌ ${err.message}`);
+      setImapStatus(`Error: ${err.message}`);
     } finally {
       setIsTestingImap(false);
     }
@@ -156,13 +163,13 @@ export default function TestConsole() {
       });
       const data = await res.json();
       if (data.success) {
-        setUtrStatus('✅ Payment verified successfully!');
+        setUtrStatus('Payment verified successfully!');
         setActiveOrder(data.order);
       } else {
-        setUtrStatus(`❌ ${data.error}`);
+        setUtrStatus(`Failed: ${data.error}`);
       }
     } catch (err: any) {
-      setUtrStatus(`❌ ${err.message}`);
+      setUtrStatus(`Error: ${err.message}`);
     }
   };
 
@@ -173,318 +180,476 @@ export default function TestConsole() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-8 font-sans">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-slate-50 text-[#0A0F1D] flex flex-col font-sans selection:bg-cyan-500/20 selection:text-cyan-800">
+      
+      {/* Brand Background Canvas */}
+      <BrandBackground
+        variant="light-tactile"
+        showEdgeSilhouette
+        edgePosition="dual-bleed"
+        edgeOpacity={0.10}
+        watermarkPosition="dual"
+        watermarkOpacity={0.04}
+        showGrid
+        showArcs
+        showGlow
+        className="flex-1"
+      >
         
-        {/* Top Header */}
-        <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center font-black text-xl text-white shadow-lg shadow-blue-500/20">
-              U
-            </div>
-            <div>
+        {/* Navigation Bar */}
+        <header className="sticky top-0 z-50 px-4 sm:px-8 pt-4 pointer-events-none">
+          <nav className="max-w-7xl mx-auto flex items-center justify-between bg-white/80 backdrop-blur-xl border border-slate-200/80 rounded-full px-5 py-2.5 shadow-lg shadow-slate-900/5 liquid-border pointer-events-auto">
+            
+            {/* Official Brand Logo */}
+            <div className="flex items-center gap-3">
+              <span className="w-8 h-8 rounded-full bg-[#0A0F1D] flex items-center justify-center shadow-xs">
+                <div className="w-5 h-5">
+                  <BrandMarkSvg size="100%" />
+                </div>
+              </span>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold tracking-tight text-white">UPIlerify Starter</h1>
-                <span className="px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 text-[10px] font-mono font-bold border border-cyan-500/20">
-                  v1.0 OSS
+                <span className="font-extrabold text-sm tracking-tight text-[#0A0F1D]">
+                  UPIlerify
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-cyan-50 text-cyan-700 text-[10px] font-mono font-bold border border-cyan-200">
+                  Starter SDK v1.0
                 </span>
               </div>
-              <p className="text-xs text-slate-400">Zero-Fee UPI Payment Engine & Verification Console</p>
             </div>
-          </div>
 
-          <div className="flex items-center gap-3">
-            <a
-              href="https://upilerify.com"
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-semibold text-slate-300 transition-colors"
-            >
-              <span>Platform Website</span>
-              <ExternalLink className="w-3.5 h-3.5" />
-            </a>
-            <a
-              href="https://github.com/harshavarma02/upilerify"
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold shadow-sm transition-colors"
-            >
-              <span>GitHub Repo</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </a>
-          </div>
+            {/* Right Action Links */}
+            <div className="flex items-center gap-2">
+              <a
+                href="https://upilerify.online"
+                target="_blank"
+                rel="noreferrer"
+                className="hidden sm:flex items-center gap-1 px-3.5 py-1.5 rounded-full text-xs font-semibold text-slate-600 hover:text-[#0A0F1D] hover:bg-slate-100 transition-colors"
+              >
+                <span>Website & Docs</span>
+                <ExternalLink className="w-3 h-3 text-slate-400" />
+              </a>
+              <a
+                href="https://github.com/harshavarma02/upilerify"
+                target="_blank"
+                rel="noreferrer"
+                className="group flex items-center gap-2 text-xs font-bold text-[#0A0F1D] cursor-pointer"
+              >
+                <span className="hidden md:inline text-slate-700 group-hover:text-[#0066FF] transition-colors">
+                  Star & Fork Repo
+                </span>
+                <span className="w-8 h-8 rounded-full bg-[#0A0F1D] text-white flex items-center justify-center transition-all duration-300 group-hover:bg-[#0066FF] group-hover:scale-105 shadow-xs">
+                  <ArrowUpRight className="w-4 h-4 text-[#00D2FF]" />
+                </span>
+              </a>
+            </div>
+
+          </nav>
         </header>
 
-        {/* 2-Column Dashboard Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Main Content Area */}
+        <main className="max-w-7xl mx-auto px-4 sm:px-8 py-10 space-y-10">
           
-          {/* Left Column: Create Order & QR Stand (7 Cols) */}
-          <div className="lg:col-span-7 space-y-6">
-            
-            {/* Create Order Card */}
-            <div className="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-5">
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-bold tracking-wide uppercase text-slate-400 flex items-center gap-2">
-                  <CreditCard className="w-4 h-4 text-cyan-400" />
-                  1. Create Payment Order
-                </h2>
-                <span className="text-[11px] font-mono text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/40">
-                  0% Fee Direct UPI
-                </span>
-              </div>
+          {/* Section Hero Headline */}
+          <div className="space-y-4 max-w-3xl">
+            <p className="text-xs tracking-widest text-slate-500 font-mono font-bold flex items-center gap-2">
+              <span className="w-6 h-px bg-slate-400" />
+              OPEN-SOURCE DEVELOPER STARTER & LIVE CONSOLE
+            </p>
+            <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-[#0A0F1D] leading-tight">
+              0% Fee UPI Verification Engine.
+            </h1>
+            <p className="text-base text-slate-600 leading-relaxed">
+              A self-hosted payment orchestrator for Next.js & Node.js. Reconciles incoming bank credit alert emails via Gmail IMAP in sub-2.8s with 0% gateway cuts.
+            </p>
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold font-mono">
+                0% Middleman Cut
+              </span>
+              <span className="px-3 py-1 rounded-full bg-cyan-50 text-cyan-700 border border-cyan-200 text-xs font-bold font-mono">
+                Sub-2.8s Regex Match
+              </span>
+              <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold font-mono">
+                13+ Indian Banks
+              </span>
+            </div>
+          </div>
 
-              <form onSubmit={handleCreateOrder} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-medium text-slate-400 mb-1">Amount (₹)</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      required
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono text-sm focus:outline-hidden focus:border-cyan-500"
-                    />
+          {/* Top 2 Cards: Step 1 (Create Order) & Step 2 (Scan & Verify) */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+            
+            {/* Card 1: Intent Creation (5 Cols) */}
+            <div className="lg:col-span-5 flex flex-col justify-between p-6 sm:p-8 rounded-[2rem] bg-white/90 backdrop-blur-xl border border-slate-200/90 shadow-[0_20px_60px_-15px_rgba(15,118,110,0.12)] liquid-border">
+              <div className="space-y-6">
+                
+                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-7 h-7 rounded-full bg-cyan-50 text-cyan-600 font-bold text-xs flex items-center justify-center border border-cyan-200">
+                      1
+                    </span>
+                    <h2 className="text-xs font-bold uppercase tracking-wider text-slate-600 font-mono">
+                      CREATE PAYMENT ORDER
+                    </h2>
                   </div>
+                  <span className="text-[11px] font-mono text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full font-bold border border-emerald-200">
+                    0% Gateway Fee
+                  </span>
+                </div>
+
+                <form onSubmit={handleCreateOrder} className="space-y-5">
+                  {/* Amount Input */}
                   <div>
-                    <label className="block text-xs font-medium text-slate-400 mb-1">Merchant UPI VPA</label>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide font-mono mb-1.5">
+                      Amount (INR)
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-400 font-mono">
+                        ₹
+                      </span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        required
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
+                        className="w-full pl-9 pr-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xl font-bold font-mono text-[#0A0F1D] focus:outline-hidden focus:bg-white focus:border-[#0066FF] transition-all"
+                      />
+                    </div>
+
+                    {/* Quick Amount Preset Chips */}
+                    <div className="flex items-center gap-1.5 mt-2.5">
+                      {['100', '499', '1000', '2500'].map((preset) => (
+                        <button
+                          key={preset}
+                          type="button"
+                          onClick={() => setAmount(preset)}
+                          className={`px-3 py-1 rounded-full text-xs font-mono font-bold transition-all cursor-pointer ${
+                            amount === preset
+                              ? 'bg-[#0A0F1D] text-white'
+                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                          }`}
+                        >
+                          ₹{preset}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Merchant VPA */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide font-mono mb-1.5">
+                      Destination UPI ID (VPA)
+                    </label>
                     <input
                       type="text"
                       required
                       value={merchantUpi}
                       onChange={(e) => setMerchantUpi(e.target.value)}
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono text-sm focus:outline-hidden focus:border-cyan-500"
+                      placeholder="merchant@upi"
+                      className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-mono text-[#0A0F1D] focus:outline-hidden focus:bg-white focus:border-[#0066FF] transition-all"
                     />
                   </div>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Merchant Name */}
                   <div>
-                    <label className="block text-xs font-medium text-slate-400 mb-1">Payee Name</label>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide font-mono mb-1.5">
+                      Merchant Display Name
+                    </label>
                     <input
                       type="text"
                       value={merchantName}
                       onChange={(e) => setMerchantName(e.target.value)}
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-hidden focus:border-cyan-500"
+                      placeholder="My SaaS Store"
+                      className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm text-[#0A0F1D] focus:outline-hidden focus:bg-white focus:border-[#0066FF] transition-all"
                     />
                   </div>
-                  <div>
-                    <label className="block text-xs font-medium text-slate-400 mb-1">Webhook URL (Optional)</label>
+
+                  {/* Micro-paisa Offset Checkbox */}
+                  <div className="flex items-center gap-2.5 pt-1">
                     <input
-                      type="url"
-                      placeholder="https://mysite.com/api/webhook"
-                      value={webhookUrl}
-                      onChange={(e) => setWebhookUrl(e.target.value)}
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono text-xs focus:outline-hidden focus:border-cyan-500"
+                      type="checkbox"
+                      id="microOffset"
+                      checked={useMicroOffset}
+                      onChange={(e) => setUseMicroOffset(e.target.checked)}
+                      className="w-4 h-4 rounded text-[#0066FF] focus:ring-0 cursor-pointer"
                     />
+                    <label htmlFor="microOffset" className="text-xs text-slate-600 select-none cursor-pointer">
+                      Use micro-paisa dynamic collision offset (+₹0.01)
+                    </label>
                   </div>
-                </div>
 
-                <div className="flex items-center gap-2 pt-1">
-                  <input
-                    type="checkbox"
-                    id="offset"
-                    checked={useMicroOffset}
-                    onChange={(e) => setUseMicroOffset(e.target.checked)}
-                    className="w-4 h-4 rounded bg-slate-950 border-slate-800 text-cyan-500"
-                  />
-                  <label htmlFor="offset" className="text-xs text-slate-400 select-none">
-                    Use micro-paisa dynamic collision offset (e.g. ₹{amount}.01, ₹{amount}.02)
-                  </label>
-                </div>
+                  <button
+                    type="submit"
+                    disabled={isCreatingOrder}
+                    className="w-full py-3.5 px-6 rounded-2xl bg-[#0A0F1D] hover:bg-[#0066FF] text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-slate-900/10 transition-all duration-200 cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    <span>{isCreatingOrder ? 'Generating...' : 'Generate Dynamic QR & Intent'}</span>
+                    <ArrowRight className="w-4 h-4 text-[#00D2FF]" />
+                  </button>
+                </form>
 
-                <button
-                  type="submit"
-                  disabled={isCreatingOrder}
-                  className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-xs tracking-wide shadow-md shadow-cyan-500/20 transition-all cursor-pointer"
-                >
-                  {isCreatingOrder ? 'Generating UPI Order...' : 'Generate Dynamic QR & Intent Link'}
-                </button>
-              </form>
+              </div>
             </div>
 
-            {/* Active Order QR Stand */}
-            {activeOrder && upiIntentUri && (
-              <div className="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-300">Active Order: {activeOrder.id}</span>
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+            {/* Card 2: Luxury Dark Verification Stage (7 Cols) */}
+            <div className="lg:col-span-7 flex flex-col justify-between p-6 sm:p-8 rounded-[2rem] bg-[#0A0F1D] text-white border border-slate-800 shadow-2xl relative overflow-hidden liquid-border-dark">
+              
+              {/* Corner Ambient Glow */}
+              <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-cyan-500/15 blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
+
+              <div className="space-y-6 relative z-10">
+                
+                {/* Header */}
+                <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-7 h-7 rounded-full bg-cyan-500/20 text-[#00D2FF] font-bold text-xs flex items-center justify-center border border-cyan-500/30">
+                      2
+                    </span>
+                    <h2 className="text-xs font-bold uppercase tracking-wider text-slate-300 font-mono">
+                      SCAN & LIVE VERIFICATION STAGE
+                    </h2>
+                  </div>
+                  {activeOrder && (
+                    <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold ${
                       activeOrder.status === 'VERIFIED'
                         ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                         : 'bg-amber-500/20 text-amber-400 border border-amber-500/30 animate-pulse'
                     }`}>
                       {activeOrder.status}
                     </span>
-                  </div>
-                  {checkoutUrl && (
-                    <a
-                      href={checkoutUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-xs text-cyan-400 hover:underline flex items-center gap-1 font-semibold"
-                    >
-                      <span>Open Checkout Page</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
                   )}
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center gap-6 p-4 rounded-xl bg-slate-950 border border-slate-800">
-                  {/* Sharp QR Code */}
-                  <div className="p-3 bg-white rounded-xl shadow-lg shrink-0">
-                    <QRCodeSVG value={upiIntentUri} size={150} level="M" />
-                  </div>
+                {activeOrder && upiIntentUri ? (
+                  <div className="space-y-6">
+                    
+                    {/* Inner 2-column Stage */}
+                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-stretch">
+                      
+                      {/* Left: Step Progress Pipeline (7 Cols) */}
+                      <div className="sm:col-span-7 flex flex-col justify-between p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3">
+                        <span className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wide">
+                          Verification Pipeline
+                        </span>
 
-                  <div className="space-y-3 flex-1 w-full">
-                    <div>
-                      <span className="text-[10px] font-mono text-slate-500 uppercase">Amount to Scan</span>
-                      <div className="text-2xl font-bold font-mono text-white">
-                        ₹{activeOrder.expectedAmount.toFixed(2)}
+                        <div className="space-y-2 text-xs">
+                          <div className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                            <span className="w-5 h-5 rounded-full bg-cyan-500/20 text-[#00D2FF] flex items-center justify-center font-mono font-bold text-[10px]">
+                              1
+                            </span>
+                            <span className="text-slate-300 font-medium">Dynamic UPI Intent URI Active</span>
+                          </div>
+
+                          <div className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                            <span className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-mono font-bold text-[10px]">
+                              2
+                            </span>
+                            <span className="text-slate-300 font-medium">Gmail IMAP TLS Listener Watching</span>
+                          </div>
+
+                          <div className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                            <span className="w-5 h-5 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-mono font-bold text-[10px]">
+                              3
+                            </span>
+                            <span className="text-slate-300 font-medium">Sub-2.8s Regex Multi-Bank Match</span>
+                          </div>
+                        </div>
+
+                        {/* Order Meta Footer */}
+                        <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-mono text-slate-400">
+                          <span>Ref: <strong className="text-cyan-400">{activeOrder.refNote}</strong></span>
+                          <span>ID: {activeOrder.id.slice(0, 10)}...</span>
+                        </div>
                       </div>
+
+                      {/* Right: Sharp QR Stand (5 Cols) */}
+                      <div className="sm:col-span-5 flex flex-col items-center justify-center p-4 rounded-2xl bg-slate-900/80 border border-slate-800 text-center space-y-3">
+                        <div className="p-3 bg-white rounded-2xl shadow-xl">
+                          <QRCodeSVG value={upiIntentUri} size={130} level="M" />
+                        </div>
+                        <div className="space-y-0.5">
+                          <div className="text-xl font-bold font-mono text-white">
+                            ₹{activeOrder.expectedAmount.toFixed(2)}
+                          </div>
+                          <div className="text-[10px] font-mono text-slate-400 uppercase tracking-wide">
+                            Scan to Pay (0% Cut)
+                          </div>
+                        </div>
+                      </div>
+
                     </div>
 
-                    <div>
-                      <span className="text-[10px] font-mono text-slate-500 uppercase">Reference Note</span>
-                      <div className="text-xs font-mono font-bold text-cyan-400">
-                        {activeOrder.refNote}
-                      </div>
-                    </div>
+                    {/* Bottom Action Deck */}
+                    <div className="pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-center gap-3">
+                      {checkoutUrl && (
+                        <a
+                          href={checkoutUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex-1 py-3 px-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 transition-all"
+                        >
+                          <Smartphone className="w-4 h-4 text-[#00D2FF]" />
+                          <span>Open Customer Pay Page</span>
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      )}
 
-                    <button
-                      onClick={() => copyToClipboard(upiIntentUri)}
-                      className="w-full py-1.5 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono flex items-center justify-center gap-2 border border-slate-700 transition-colors"
-                    >
-                      {copied ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                      <span>{copied ? 'Copied Intent Link' : 'Copy UPI Intent URI'}</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Manual 12-digit UTR Verification Fallback */}
-                {activeOrder.status === 'PENDING' && (
-                  <form onSubmit={handleManualVerify} className="pt-2 border-t border-slate-800 space-y-2">
-                    <label className="block text-xs font-medium text-slate-400">
-                      Tier 3 Fallback: Test Manual 12-Digit UTR
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        maxLength={12}
-                        placeholder="e.g. 499012345678"
-                        value={manualUtr}
-                        onChange={(e) => setManualUtr(e.target.value)}
-                        className="flex-1 px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono text-xs focus:outline-hidden focus:border-cyan-500"
-                      />
                       <button
-                        type="submit"
-                        className="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-xs"
+                        onClick={() => copyToClipboard(upiIntentUri)}
+                        className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold font-mono flex items-center justify-center gap-2 transition-colors cursor-pointer"
                       >
-                        Verify UTR
+                        {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                        <span>{copied ? 'Copied Intent URI' : 'Copy Intent URI'}</span>
                       </button>
                     </div>
-                    {utrStatus && <p className="text-xs font-mono">{utrStatus}</p>}
-                  </form>
+
+                  </div>
+                ) : (
+                  <div className="py-20 text-center space-y-3">
+                    <div className="w-12 h-12 rounded-full bg-slate-800/80 text-slate-500 flex items-center justify-center mx-auto">
+                      <CreditCard className="w-6 h-6" />
+                    </div>
+                    <p className="text-sm text-slate-400 font-medium">
+                      Fill Step 1 and click <strong>&quot;Generate Dynamic QR&quot;</strong> to start live stage.
+                    </p>
+                  </div>
                 )}
+
               </div>
-            )}
+            </div>
 
           </div>
 
-          {/* Right Column: IMAP Setup & Live Event Stream (5 Cols) */}
-          <div className="lg:col-span-5 space-y-6">
+          {/* Bottom 2 Cards: IMAP Setup & Real-time Log Inspector */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            {/* Live IMAP Tester Card */}
-            <div className="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-bold tracking-wide uppercase text-slate-400 flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-cyan-400" />
-                  2. Live Gmail IMAP Sync
-                </h2>
-                <span className="text-[10px] font-mono text-slate-500">TLS Port 993</span>
+            {/* Card 3: Live Gmail IMAP Sync (5 Cols) */}
+            <div className="lg:col-span-5 p-6 sm:p-8 rounded-[2rem] bg-white/90 backdrop-blur-xl border border-slate-200/90 shadow-[0_20px_60px_-15px_rgba(15,118,110,0.12)] liquid-border space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-7 h-7 rounded-full bg-cyan-50 text-cyan-600 font-bold text-xs flex items-center justify-center border border-cyan-200">
+                    3
+                  </span>
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-slate-600 font-mono">
+                    GMAIL IMAP TLS CONNECTOR
+                  </h2>
+                </div>
+                <span className="text-[11px] font-mono text-slate-500">Port 993 TLS</span>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1">Gmail Address</label>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide font-mono mb-1.5">
+                    Gmail Address
+                  </label>
                   <input
                     type="email"
                     placeholder="merchant@gmail.com"
                     value={gmailAddress}
                     onChange={(e) => setGmailAddress(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono text-xs focus:outline-hidden focus:border-cyan-500"
+                    className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-mono text-[#0A0F1D] focus:outline-hidden focus:bg-white focus:border-[#0066FF] transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1">16-Character App Password</label>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide font-mono mb-1.5">
+                    16-Character App Password
+                  </label>
                   <input
                     type="password"
                     placeholder="xxxx xxxx xxxx xxxx"
                     value={gmailAppPassword}
                     onChange={(e) => setGmailAppPassword(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono text-xs focus:outline-hidden focus:border-cyan-500"
+                    className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-mono text-[#0A0F1D] focus:outline-hidden focus:bg-white focus:border-[#0066FF] transition-all"
                   />
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Generate at: <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noreferrer" className="text-[#0066FF] hover:underline font-mono">Google App Passwords ↗</a>
+                  </p>
                 </div>
 
                 <button
                   type="button"
                   onClick={handleTestImap}
                   disabled={isTestingImap}
-                  className="w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold border border-slate-700 flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                  className="w-full py-3 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 text-[#0A0F1D] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${isTestingImap ? 'animate-spin' : ''}`} />
                   <span>{isTestingImap ? 'Connecting...' : 'Test Mailbox Connection'}</span>
                 </button>
 
                 {imapStatus && (
-                  <p className="text-xs font-mono p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-300">
+                  <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-700">
                     {imapStatus}
-                  </p>
+                  </div>
                 )}
               </div>
             </div>
 
-            {/* Live SSE Event Stream & Activity Logs */}
-            <div className="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-bold tracking-wide uppercase text-slate-400 flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-emerald-400" />
-                  3. Real-Time Event Stream
-                </h2>
-                <span className="flex items-center gap-1.5 text-[10px] font-mono text-emerald-400">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                  SSE Live
+            {/* Card 4: SSE Terminal & Live Log Inspector (7 Cols) */}
+            <div className="lg:col-span-7 p-6 sm:p-8 rounded-[2rem] bg-white/90 backdrop-blur-xl border border-slate-200/90 shadow-[0_20px_60px_-15px_rgba(15,118,110,0.12)] liquid-border space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-7 h-7 rounded-full bg-cyan-50 text-cyan-600 font-bold text-xs flex items-center justify-center border border-cyan-200">
+                    4
+                  </span>
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-slate-600 font-mono">
+                    REAL-TIME SSE EVENT STREAM
+                  </h2>
+                </div>
+                <span className="flex items-center gap-1.5 text-xs font-mono font-bold text-emerald-600">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  Live SSE
                 </span>
               </div>
 
-              <div className="h-64 overflow-y-auto space-y-2 p-3 bg-slate-950 rounded-xl border border-slate-800 font-mono text-xs">
-                {logs.length === 0 ? (
-                  <p className="text-slate-600 text-center py-8">Waiting for payment events...</p>
-                ) : (
-                  logs.map((log) => (
-                    <div key={log.id} className="flex items-start gap-2 text-slate-300 leading-relaxed">
-                      <span className="text-slate-600 shrink-0">[{log.time}]</span>
-                      <span className={
-                        log.type === 'verified'
-                          ? 'text-emerald-400 font-bold'
-                          : log.type === 'order'
-                          ? 'text-cyan-400'
-                          : 'text-slate-300'
-                      }>
-                        {log.message}
-                      </span>
-                    </div>
-                  ))
-                )}
+              {/* Terminal Box */}
+              <div className="rounded-2xl overflow-hidden bg-[#0A0F1D] text-slate-200 border border-slate-800 shadow-inner">
+                <div className="flex items-center justify-between px-4 py-2.5 bg-slate-900 border-b border-slate-800">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
+                    <span className="text-[11px] font-mono text-slate-400 ml-2">upilerify-event-daemon</span>
+                  </div>
+                </div>
+
+                <div className="h-60 overflow-y-auto p-4 font-mono text-xs space-y-2">
+                  {logs.length === 0 ? (
+                    <p className="text-slate-600 text-center py-16">
+                      Awaiting live payment events & bank alerts...
+                    </p>
+                  ) : (
+                    logs.map((log) => (
+                      <div key={log.id} className="flex items-start gap-2 leading-relaxed">
+                        <span className="text-slate-500 shrink-0">[{log.time}]</span>
+                        <span className={
+                          log.type === 'verified'
+                            ? 'text-emerald-400 font-bold'
+                            : log.type === 'order'
+                            ? 'text-cyan-400'
+                            : 'text-slate-300'
+                        }>
+                          {log.message}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             </div>
 
           </div>
 
-        </div>
+        </main>
 
-      </div>
+        {/* Footer */}
+        <footer className="border-t border-slate-200/80 py-8 px-4 sm:px-8 text-center text-xs text-slate-500 font-mono">
+          <p>
+            UPIlerify Open-Source Starter Kit · Released under the MIT License · Made for Indian Developers & Founders
+          </p>
+        </footer>
+
+      </BrandBackground>
     </div>
   );
 }

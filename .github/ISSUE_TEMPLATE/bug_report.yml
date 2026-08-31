@@ -1,0 +1,50 @@
+name: 🐛 Bug Report
+description: Report a reproducible bug or issue with UPIlerify
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report an issue! Please provide as much detail as possible to help us reproduce and resolve the problem.
+  - type: input
+    id: bank
+    attributes:
+      label: Bank / PSP Involved
+      description: If this relates to bank email parsing, which bank or UPI app sent the notification?
+      placeholder: "e.g. HDFC Bank, Kotak 811, PhonePe, ICICI"
+  - type: dropdown
+    id: node-version
+    attributes:
+      label: Node.js Runtime Version
+      options:
+        - "Node.js 22.x (LTS)"
+        - "Node.js 20.x (LTS)"
+        - "Node.js 18.x"
+        - "Other"
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: Describe the Bug
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Step-by-step instructions on how to reproduce the issue.
+      placeholder: |
+        1. POST /api/orders/create with amount 499
+        2. Trigger IMAP sync
+        3. See error in console
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Logs / Snippets
+      description: Please copy and paste any terminal output or stack trace (redacting any private passwords or keys!).
+      render: shell

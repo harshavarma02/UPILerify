@@ -1,17 +1,265 @@
 @import "tailwindcss";
 
-@theme {
-  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  --font-mono: 'Geist Mono', 'Fira Code', 'Courier New', Courier, monospace;
+@layer base {
+  :root {
+    /* 1. Foundation: Luxurious Off-White Canvas */
+    --background: #f8fafc;
+    --foreground: #0a0f1d;
+
+    /* 2. Floating Crisp White Card Surfaces */
+    --card: #ffffff;
+    --card-foreground: #0a0f1d;
+    --card-surface: #ffffff;
+    --card-surface-muted: #f1f5f9;
+
+    /* 3. Upilerify Brand Spectrum */
+    --brand-navy: #0a0f1d;
+    --brand-navy-muted: #334155;
+    --brand-lime: #70f818;
+    --brand-lime-subtle: #16a34a;
+    --brand-cyan: #00d2ff;
+    --brand-blue: #0066ff;
+    --brand-blue-subtle: #2563eb;
+
+    /* 4. Precision UI Tokens */
+    --primary: #0066ff;
+    --primary-foreground: #ffffff;
+    --secondary: #f1f5f9;
+    --muted: #f1f5f9;
+    --muted-foreground: #64748b;
+    --border: rgba(226, 232, 240, 0.85);
+    --border-hover: rgba(203, 213, 225, 0.9);
+    --input-border: #e2e8f0;
+    --radius: 1rem;
+  }
+
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
 }
 
-:root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+/* Atmospheric Gradients */
+.bg-gradient-flow-ribbon {
+  background: linear-gradient(135deg, #70f818 0%, #00d2ff 40%, #0066ff 100%);
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: var(--font-sans);
+.bg-gradient-flow-action {
+  background: linear-gradient(90deg, #00d2ff 0%, #70f818 100%);
+}
+
+.text-gradient-flow {
+  background: linear-gradient(135deg, #0066ff 0%, #00d2ff 50%, #16a34a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.bg-atmospheric-glow {
+  background: radial-gradient(ellipse 80% 50% at 50% -5%, rgba(0, 210, 255, 0.08) 0%, rgba(112, 248, 24, 0.03) 40%, transparent 80%),
+              linear-gradient(180deg, #ffffff 0%, #f8fafc 40%, #f1f5f9 100%);
+}
+
+/* Multi-layered Diffused Floating Shadows */
+.shadow-brand-floating {
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.05),
+              0 2px 4px -1px rgba(15, 23, 42, 0.02),
+              0 12px 28px -4px rgba(15, 23, 42, 0.05);
+}
+
+.shadow-brand-floating-hover:hover {
+  box-shadow: 0 0 0 1px rgba(0, 210, 255, 0.25),
+              0 4px 8px -2px rgba(15, 23, 42, 0.04),
+              0 24px 48px -12px rgba(0, 102, 255, 0.09);
+}
+
+/* ==========================================================================
+   MERIDIAN SPECULAR LIQUID BORDERS & GLASS LIGHTING
+   ========================================================================== */
+.liquid-border {
+  position: relative;
+}
+.liquid-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 210, 255, 0.45),
+    rgba(255, 255, 255, 0.85) 35%,
+    rgba(0, 210, 255, 0.08) 65%,
+    rgba(112, 248, 24, 0.4)
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.liquid-border-dark {
+  position: relative;
+}
+.liquid-border-dark::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 210, 255, 0.55),
+    rgba(255, 255, 255, 0.25) 35%,
+    rgba(255, 255, 255, 0.04) 60%,
+    rgba(112, 248, 24, 0.4)
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Custom visible slim scrollbar */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #94a3b8 #f1f5f9;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #0066ff;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ==========================================================================
+   INTERACTIVE LASER OCR SCANNER & BOUNDING BOX ANIMATIONS
+   ========================================================================== */
+@keyframes scanBeam {
+  0% {
+    top: 0%;
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 10px #00d2ff);
+  }
+  100% {
+    top: 94%;
+    opacity: 0.8;
+  }
+}
+
+.scanner-line {
+  animation: scanBeam 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes pulseTarget {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.9;
+    border-color: rgba(0, 210, 255, 0.7);
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 1;
+    border-color: #70f818;
+    filter: drop-shadow(0 0 12px rgba(112, 248, 24, 0.6));
+  }
+}
+
+.highlight-active {
+  animation: pulseTarget 1.8s infinite ease-in-out;
+}
+
+/* ==========================================================================
+   CYBERPUNK FINTECH CHROMATIC GLITCH EFFECT
+   ========================================================================== */
+@keyframes cyberGlitch {
+  0%, 100% {
+    transform: translate(0);
+    text-shadow: -1px 0 #00d2ff, 1px 0 #f43f5e;
+  }
+  92% {
+    transform: translate(0);
+    text-shadow: -1px 0 #00d2ff, 1px 0 #f43f5e;
+  }
+  93% {
+    transform: translate(-1.5px, 0.5px);
+    text-shadow: 2px 0 #00d2ff, -2px 0 #f43f5e;
+  }
+  94% {
+    transform: translate(1.5px, -0.5px);
+    text-shadow: -2px 0 #00d2ff, 2px 0 #f43f5e;
+  }
+  96% {
+    transform: translate(-1px, 1px);
+    text-shadow: 1.5px 0 #00d2ff, -1.5px 0 #f43f5e;
+  }
+  98% {
+    transform: translate(1px, -0.5px);
+    text-shadow: -1px 0 #00d2ff, 1px 0 #f43f5e;
+  }
+}
+
+.animate-cyber-glitch {
+  animation: cyberGlitch 3s infinite linear;
+}
+
+@keyframes cyberGlitchBox {
+  0%, 90%, 100% {
+    box-shadow: 0 0 10px rgba(0, 210, 255, 0.2), 0 0 0 1px rgba(245, 158, 11, 0.4);
+    transform: translate(0);
+  }
+  92% {
+    box-shadow: -2px 0 12px rgba(0, 210, 255, 0.6), 2px 0 12px rgba(244, 63, 94, 0.6), 0 0 0 1px rgba(0, 210, 255, 0.8);
+    transform: translate(-1px, 0.5px);
+  }
+  94% {
+    box-shadow: 2px 0 12px rgba(244, 63, 94, 0.6), -2px 0 12px rgba(0, 210, 255, 0.6), 0 0 0 1px rgba(244, 63, 94, 0.8);
+    transform: translate(1px, -0.5px);
+  }
+  96% {
+    box-shadow: 0 0 15px rgba(112, 248, 24, 0.5), 0 0 0 1px rgba(112, 248, 24, 0.7);
+    transform: translate(0);
+  }
+}
+
+.animate-cyber-box {
+  animation: cyberGlitchBox 3.5s infinite ease-in-out;
 }

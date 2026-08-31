@@ -12,11 +12,13 @@
   "bugs": {
     "url": "https://github.com/harshavarma02/upilerify/issues"
   },
-  "homepage": "https://upilerify.com",
+  "homepage": "https://upilerify.online",
   "keywords": [
     "upi",
     "payments",
-    "payment-gateway",
+    "payment-verification",
+    "self-hosted",
+    "upi-verification-engine",
     "india",
     "fintech",
     "imap",
@@ -41,6 +43,7 @@
     "imapflow": "^1.0.174",
     "lucide-react": "^1.33.0",
     "mailparser": "^3.7.2",
+    "motion": "^13.1.1",
     "next": "^16.3.2",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.8",
