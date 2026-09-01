@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { orderManager } from '@/lib/engine/orderManager';
+import { validateWebhookUrl } from '@/lib/security/urlValidator';
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,20 +14,44 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { order, upiIntentUri } = orderManager.createOrder({
+    // SECURITY FIX (Phase 4): webhook targets are SSRF-validated BEFORE being
+    // stored. If none is provided, fall back to the server-configured URL.
+    const effectiveWebhookUrl = webhookUrl || process.env.WEBHOOK_URL;
+    if (effectiveWebhookUrl) {
+      const urlCheck = await validateWebhookUrl(effectiveWebhookUrl);
+      if (!urlCheck.valid) {
+        return NextResponse.json(
+          { success: false, error: urlCheck.error },
+          { status: 400 }
+        );
+      }
+    }
+
+    const { order, upiIntentUri } = await orderManager.createOrder({
       amount: Number(amount),
       merchantUpiId,
       merchantName,
       useMicroOffset: !!useMicroOffset,
-      webhookUrl,
+      webhookUrl: effectiveWebhookUrl,
       customNote,
       customerEmail,
       metadata,
     });
 
+    // SECURITY: the create response must not echo sensitive fields either.
     return NextResponse.json({
       success: true,
-      order,
+      order: {
+        id: order.id,
+        merchantUpiId: order.merchantUpiId,
+        merchantName: order.merchantName,
+        baseAmount: order.baseAmount,
+        expectedAmount: order.expectedAmount,
+        refNote: order.refNote,
+        status: order.status,
+        createdAt: order.createdAt,
+        expiresAt: order.expiresAt,
+      },
       upiIntentUri,
       checkoutUrl: `/pay/${order.id}`,
     });

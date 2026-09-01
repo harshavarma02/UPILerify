@@ -12,7 +12,9 @@ interface OrderState {
   refNote: string;
   merchantUpiId: string;
   merchantName: string;
-  status: 'PENDING' | 'VERIFIED' | 'EXPIRED';
+  status: 'PENDING' | 'CLAIMED' | 'VERIFIED' | 'EXPIRED';
+  claimedUtr?: string;
+  claimedAt?: number;
   matchedUtr?: string;
   matchedBank?: string;
 }
@@ -142,6 +144,37 @@ export default function CheckoutPage({ params }: { params: Promise<{ orderId: st
                 UTR: <span className="font-mono font-bold text-[#0A0F1D]">{order.matchedUtr || 'Auto-matched'}</span>
               </p>
               <p className="text-[11px] text-emerald-700 font-medium">100% direct settlement confirmed into merchant bank.</p>
+            </div>
+          ) : order.status === 'CLAIMED' ? (
+            /* Claimed State — UTR received, awaiting real bank confirmation */
+            <div className="space-y-6">
+              <div className="p-6 rounded-2xl bg-sky-50 border border-sky-200 text-center space-y-3">
+                <div className="w-12 h-12 rounded-full bg-sky-500 text-white flex items-center justify-center mx-auto shadow-lg shadow-sky-500/20">
+                  <Clock className="w-7 h-7 animate-spin [animation-duration:3s]" />
+                </div>
+                <h2 className="text-lg font-bold text-sky-900">UTR Received — Awaiting Bank Confirmation</h2>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Your UTR{' '}
+                  <span className="font-mono font-bold text-[#0A0F1D]">{order.claimedUtr || '—'}</span>{' '}
+                  has been recorded. We are matching it against the live bank alert feed and will confirm
+                  automatically — usually within seconds.
+                </p>
+                <p className="text-[11px] text-sky-700 font-medium">
+                  No action needed. This page updates by itself.
+                </p>
+              </div>
+
+              {/* Keep the pay controls visible in case the payment hasn't actually gone through */}
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 shadow-inner flex items-center justify-center mx-auto max-w-[220px] opacity-60">
+                <QRCodeSVG value={upiIntentUri} size={185} level="M" />
+              </div>
+              <a
+                href={upiIntentUri}
+                className="w-full py-3.5 px-4 rounded-2xl bg-[#0A0F1D]/80 hover:bg-[#0066FF] text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-slate-900/10 transition-all duration-200 cursor-pointer"
+              >
+                <Smartphone className="w-4 h-4 text-[#00D2FF]" />
+                <span>Pay Again with UPI App</span>
+              </a>
             </div>
           ) : (
             /* Pending State */

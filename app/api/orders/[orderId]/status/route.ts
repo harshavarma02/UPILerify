@@ -7,7 +7,7 @@ export async function GET(
 ) {
   try {
     const { orderId } = await params;
-    const order = orderManager.getOrder(orderId);
+    const order = await orderManager.getOrder(orderId);
 
     if (!order) {
       return NextResponse.json({ success: false, error: 'Order not found' }, { status: 404 });
@@ -26,6 +26,8 @@ export async function GET(
         status: order.status,
         createdAt: order.createdAt,
         expiresAt: order.expiresAt,
+        claimedUtr: order.claimedUtr,
+        claimedAt: order.claimedAt,
         verifiedAt: order.verifiedAt,
         matchedUtr: order.matchedUtr,
         matchedBank: order.matchedBank,

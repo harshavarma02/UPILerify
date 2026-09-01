@@ -1,9 +1,18 @@
 /**
  * UPIlerify Webhook Dispatcher
  * Sends real-time payment verification events to merchant URLs with HMAC-SHA256 signature
+ *
+ * SECURITY REMEDIATION (Phase 4):
+ *  - NO hardcoded signing secret fallback — refuses to sign if WEBHOOK_SECRET
+ *    is not configured (was 'upilerify_secret_key', publicly known).
+ *  - SSRF validation of the target URL before every dispatch.
+ *  - Redirects are REJECTED (redirect: 'error') — a public URL 302-redirecting
+ *    to 169.254.169.254 or an internal host can no longer bypass the validator.
+ *  - Response bodies are NEVER returned to callers (no SSRF exfiltration oracle).
  */
 
 import crypto from 'crypto';
+import { validateWebhookUrl } from '../security/urlValidator';
 
 export interface WebhookPayload {
   event: 'payment.verified' | 'order.expired' | 'webhook.test';
@@ -26,7 +35,6 @@ export interface WebhookPayload {
 export interface WebhookDispatchResult {
   success: boolean;
   statusCode?: number;
-  responseBody?: string;
   error?: string;
 }
 
@@ -44,14 +52,26 @@ export class WebhookDispatcher {
   public static async dispatch(
     webhookUrl: string,
     payload: WebhookPayload,
-    secret: string = process.env.WEBHOOK_SECRET || 'upilerify_secret_key'
+    secret?: string
   ): Promise<WebhookDispatchResult> {
+    // SECURITY FIX: no default secret — refuse to sign with a known key.
+    const signingSecret = secret || process.env.WEBHOOK_SECRET;
+    if (!signingSecret) {
+      return { success: false, error: 'WEBHOOK_SECRET is not configured. Cannot sign webhook.' };
+    }
+
     if (!webhookUrl || !webhookUrl.startsWith('http')) {
       return { success: false, error: 'Invalid webhook URL' };
     }
 
+    // SECURITY FIX: SSRF validation before any outbound request.
+    const urlCheck = await validateWebhookUrl(webhookUrl);
+    if (!urlCheck.valid) {
+      return { success: false, error: urlCheck.error };
+    }
+
     const jsonString = JSON.stringify(payload);
-    const signature = this.generateSignature(jsonString, secret);
+    const signature = this.generateSignature(jsonString, signingSecret);
 
     try {
       const response = await fetch(webhookUrl, {
@@ -63,18 +83,20 @@ export class WebhookDispatcher {
           'X-Upilerify-Event': payload.event,
         },
         body: jsonString,
+        redirect: 'error', // SECURITY FIX: never follow redirects (SSRF bypass vector)
         signal: AbortSignal.timeout(5000), // 5 second timeout
       });
 
-      const responseText = await response.text();
+      // SECURITY FIX: consume the body but never expose it — response content
+      // could be internal service output (SSRF exfiltration oracle).
+      await response.text().catch(() => '');
 
       return {
         success: response.ok,
         statusCode: response.status,
-        responseBody: responseText.slice(0, 500),
       };
     } catch (err: any) {
-      console.error('[WebhookDispatcher] Delivery failed to', webhookUrl, err.message);
+      console.error('[WebhookDispatcher] Delivery failed:', err.message);
       return {
         success: false,
         error: err.message || 'Network error delivering webhook',

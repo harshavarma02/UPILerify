@@ -3,14 +3,19 @@ import { imapService } from '@/lib/imap/imapService';
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json().catch(() => ({}));
-    const email = body.email || process.env.GMAIL_ADDRESS;
-    const appPassword = body.appPassword || process.env.GMAIL_APP_PASSWORD;
+    // SECURITY FIX (Phase 3): credentials are accepted ONLY from server-side
+    // environment configuration. Request-body credentials were removed to
+    // eliminate the arbitrary-mailbox / credential-injection attack vector.
+    const email = process.env.GMAIL_ADDRESS;
+    const appPassword = process.env.GMAIL_APP_PASSWORD;
 
     if (!email || !appPassword) {
       return NextResponse.json(
-        { success: false, message: 'Gmail address and 16-character App Password are required.' },
-        { status: 400 }
+        {
+          success: false,
+          message: 'IMAP credentials not configured on server. Set GMAIL_ADDRESS and GMAIL_APP_PASSWORD.',
+        },
+        { status: 503 }
       );
     }
 

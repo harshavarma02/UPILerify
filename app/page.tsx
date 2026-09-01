@@ -30,7 +30,8 @@ interface OrderData {
   refNote: string;
   merchantUpiId: string;
   merchantName: string;
-  status: 'PENDING' | 'VERIFIED' | 'EXPIRED';
+  status: 'PENDING' | 'CLAIMED' | 'VERIFIED' | 'EXPIRED';
+  claimedUtr?: string;
   matchedUtr?: string;
   matchedBank?: string;
   matchTier?: string;
@@ -45,8 +46,6 @@ export default function TestConsole() {
   const [webhookUrl, setWebhookUrl] = useState('');
   
   // IMAP Form
-  const [gmailAddress, setGmailAddress] = useState('');
-  const [gmailAppPassword, setGmailAppPassword] = useState('');
   const [imapStatus, setImapStatus] = useState<string | null>(null);
   const [isTestingImap, setIsTestingImap] = useState(false);
 
@@ -71,6 +70,12 @@ export default function TestConsole() {
     eventSource.addEventListener('order_created', (e) => {
       const data = JSON.parse(e.data);
       addLog(`Created order ${data.order.id} for ₹${data.order.expectedAmount}`, 'order');
+    });
+
+    eventSource.addEventListener('payment_claimed', (e) => {
+      const data = JSON.parse(e.data);
+      setActiveOrder((prev) => (prev && prev.id === data.order.id ? data.order : prev));
+      addLog(`UTR claimed on order ${data.order.id} — awaiting bank confirmation`, 'claimed');
     });
 
     eventSource.addEventListener('payment_verified', (e) => {
@@ -128,17 +133,16 @@ export default function TestConsole() {
     setIsTestingImap(true);
     setImapStatus('Connecting to Gmail TLS IMAP (Port 993)...');
     try {
+      // SECURITY (Phase 3): credentials live only in server env vars — the
+      // browser never sends (or sees) the mailbox address or app password.
       const res = await fetch('/api/imap/test-connection', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: gmailAddress,
-          appPassword: gmailAppPassword,
-        }),
+        body: JSON.stringify({}),
       });
       const data = await res.json();
       if (data.success) {
-        setImapStatus(`Connected to ${gmailAddress}! (${data.mailboxCount} emails in INBOX)`);
+        setImapStatus(`Connected to server-configured mailbox! (${data.mailboxCount} emails in INBOX)`);
       } else {
         setImapStatus(`Failed: ${data.message} ${data.error ? `(${data.error})` : ''}`);
       }
@@ -413,6 +417,8 @@ export default function TestConsole() {
                     <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold ${
                       activeOrder.status === 'VERIFIED'
                         ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                        : activeOrder.status === 'CLAIMED'
+                        ? 'bg-sky-500/20 text-sky-400 border border-sky-500/30'
                         : 'bg-amber-500/20 text-amber-400 border border-amber-500/30 animate-pulse'
                     }`}>
                       {activeOrder.status}
@@ -538,32 +544,18 @@ export default function TestConsole() {
               </div>
 
               <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide font-mono mb-1.5">
-                    Gmail Address
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="merchant@gmail.com"
-                    value={gmailAddress}
-                    onChange={(e) => setGmailAddress(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-mono text-[#0A0F1D] focus:outline-hidden focus:bg-white focus:border-[#0066FF] transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide font-mono mb-1.5">
-                    16-Character App Password
-                  </label>
-                  <input
-                    type="password"
-                    placeholder="xxxx xxxx xxxx xxxx"
-                    value={gmailAppPassword}
-                    onChange={(e) => setGmailAppPassword(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-mono text-[#0A0F1D] focus:outline-hidden focus:bg-white focus:border-[#0066FF] transition-all"
-                  />
-                  <p className="text-[11px] text-slate-500 mt-1">
-                    Generate at: <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noreferrer" className="text-[#0066FF] hover:underline font-mono">Google App Passwords ↗</a>
+                <div className="p-4 rounded-2xl bg-sky-50 border border-sky-200 text-xs text-sky-900 space-y-1">
+                  <p className="font-bold uppercase tracking-wide font-mono">Server-Side Configuration Only</p>
+                  <p className="leading-relaxed">
+                    IMAP credentials are never entered in the browser. Configure them once via environment variables
+                    on the server:
+                  </p>
+                  <p className="font-mono font-bold text-[11px] pt-1">
+                    GMAIL_ADDRESS · GMAIL_APP_PASSWORD
+                  </p>
+                  <p className="text-[11px] text-sky-700">
+                    Generate an App Password at{' '}
+                    <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noreferrer" className="underline hover:no-underline">Google App Passwords ↗</a>
                   </p>
                 </div>
 

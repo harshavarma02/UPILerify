@@ -39,6 +39,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "better-sqlite3": "^12.4.1",
     "clsx": "^2.1.1",
     "imapflow": "^1.0.174",
     "lucide-react": "^1.33.0",
@@ -52,6 +53,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
+    "@types/better-sqlite3": "^9.6.0",
     "@types/mailparser": "^3.4.4",
     "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",

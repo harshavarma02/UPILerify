@@ -3,13 +3,13 @@ import { WebhookDispatcher, WebhookPayload } from '@/lib/webhooks/webhookDispatc
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json().catch(() => ({}));
-    const { webhookUrl, secret } = body;
-
-    const targetUrl = webhookUrl || process.env.WEBHOOK_URL;
+    // SECURITY FIX (Phase 4): the target URL and signing secret are taken ONLY
+    // from server configuration. User-supplied webhookUrl/secret were removed —
+    // this endpoint previously allowed arbitrary outbound requests (SSRF).
+    const targetUrl = process.env.WEBHOOK_URL;
     if (!targetUrl) {
       return NextResponse.json(
-        { success: false, error: 'Target webhook URL is required.' },
+        { success: false, error: 'WEBHOOK_URL is not configured on the server.' },
         { status: 400 }
       );
     }
@@ -32,14 +32,14 @@ export async function POST(req: NextRequest) {
       },
     };
 
-    const result = await WebhookDispatcher.dispatch(targetUrl, testPayload, secret || process.env.WEBHOOK_SECRET);
+    // Secret comes exclusively from the environment — never from the request.
+    const result = await WebhookDispatcher.dispatch(targetUrl, testPayload);
 
+    // SECURITY FIX: no responseSnippet — response bodies are never exposed
+    // (prevents using this endpoint as an SSRF data exfiltration oracle).
     return NextResponse.json({
       success: result.success,
-      deliveredTo: targetUrl,
       statusCode: result.statusCode,
-      responseSnippet: result.responseBody,
-      payload: testPayload,
       error: result.error,
     });
   } catch (err: any) {

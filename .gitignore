@@ -9,6 +9,10 @@ node_modules/
 # Next.js build output
 /.next/
 /out/
+*.tsbuildinfo
+
+# SQLite data (Phase 5 persistence)
+/data/
 
 # Production build
 /build
@@ -38,3 +42,4 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw?
+Coding agent chat history/

@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const result = orderManager.verifyByManualUtr(orderId, utr);
+    const result = await orderManager.verifyByManualUtr(orderId, utr);
 
     if (!result.success) {
       return NextResponse.json({ success: false, error: result.message }, { status: 400 });
@@ -22,6 +22,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       message: result.message,
+      status: result.status,
       order: result.order,
     });
   } catch (err: any) {
