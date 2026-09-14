@@ -12,12 +12,13 @@
     <a href="https://github.com/harshavarma02/upilerify/network/members"><img src="https://img.shields.io/github/forks/harshavarma02/upilerify?style=flat-square&color=blueviolet" alt="GitHub Forks" /></a>
     <a href="https://nextjs.org"><img src="https://img.shields.io/badge/Next.js-16%20(Turbopack)-black?style=flat-square&logo=next.js" alt="Next.js 16" /></a>
     <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-Strict-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" /></a>
-    <a href="https://upilerify.online"><img src="https://img.shields.io/badge/Fees-0%25%20Toll-10B981?style=flat-square" alt="0% Fees" /></a>
+    <a href="https://www.upilerify.online"><img src="https://img.shields.io/badge/Fees-0%25%20Toll-10B981?style=flat-square" alt="0% Fees" /></a>
   </p>
 
   <p align="center">
     <a href="https://vercel.com/new/clone?repository-url=https://github.com/harshavarma02/upilerify&env=DEFAULT_UPI_ID,DEFAULT_UPI_NAME&envDescription=Enter%20your%20destination%20UPI%20VPA%20and%20Merchant%20Name"><img src="https://vercel.com/button" alt="Deploy with Vercel"/></a>
-    <a href="https://upilerify.online/#sandbox"><img src="https://img.shields.io/badge/⚡_Live_Sandbox-Try_Demo-0066FF?style=flat-square" alt="Live Demo" /></a>
+    <a href="https://www.upilerify.online/#sandbox"><img src="https://img.shields.io/badge/⚡_Live_Sandbox-Try_Demo-0066FF?style=flat-square" alt="Live Demo" /></a>
+    <a href="https://www.upilerify.online/tools"><img src="https://img.shields.io/badge/🛠️_Free_Tools-Open_Suite-00D2FF?style=flat-square" alt="Free Online Tools" /></a>
   </p>
 </div>
 
@@ -84,6 +85,23 @@ sequenceDiagram
 | **Data Ownership** | **100% Self-Hosted & Private** | Third-party vendor lock-in |
 | **Setup Time** | **< 2 Minutes** | Days to weeks |
 | **Replay / Fraud Protection** | **3-Tier Collision Avoidance + UTR Dedup** | Proprietary risk engine |
+
+---
+
+## 🛠️ Free Online UPI Utilities
+
+Need to generate a payment QR, deep link, or test UPI parameters without installing the engine? Use our free, 100% in-browser developer & merchant tools at [upilerify.online](https://www.upilerify.online):
+
+| Utility | Description | Access |
+| :--- | :--- | :--- |
+| 💰 **[UPI QR Code with Amount](https://www.upilerify.online/tools/upi-qr-code-with-amount)** | Generate fixed-amount payment QR codes that lock the invoice total upon scanning. | [**Open Tool →**](https://www.upilerify.online/tools/upi-qr-code-with-amount) |
+| 🏦 **[Bank Account to UPI QR](https://www.upilerify.online/tools/bank-account-to-upi-qr-code)** | Convert any Indian account number + IFSC directly into an NPCI QR (zero VPA required). | [**Open Tool →**](https://www.upilerify.online/tools/bank-account-to-upi-qr-code) |
+| 💬 **[WhatsApp UPI Payment Link](https://www.upilerify.online/tools/upi-link-generator)** | Create 1-click WhatsApp payment request links and itemized invoice messages. | [**Open Tool →**](https://www.upilerify.online/tools/upi-link-generator) |
+| ⚡ **[Dynamic UPI QR Generator](https://www.upilerify.online/tools/upi-qr-generator)** | Customizable payment QR generator with live preview and 1024px SVG/PNG download. | [**Open Tool →**](https://www.upilerify.online/tools/upi-qr-generator) |
+| 🔍 **[UPI Handles & Bank Lookup](https://www.upilerify.online/tools/upi-handles)** | Search 150+ PSP handles (@okaxis, @ybl, @oksbi, @ptyes) and find issuing banks. | [**Open Tool →**](https://www.upilerify.online/tools/upi-handles) |
+| 🛡️ **[QR Code to UPI ID Extractor](https://www.upilerify.online/tools/qr-code-to-upi-id)** | Upload or scan any QR code to decode parameters and check for phishing risks. | [**Open Tool →**](https://www.upilerify.online/tools/qr-code-to-upi-id) |
+
+> 🔒 **100% Client-Side Privacy**: All tools run entirely in the browser. No banking credentials, amounts, or Virtual Payment Addresses are ever transmitted or stored on any server.
 
 ---
 
@@ -262,7 +280,7 @@ Need help integrating UPIlerify into your custom tech stack, e-commerce store, m
 - 🏦 **Bespoke Bank / Wallet Parser Development & Multi-Mailbox Failover**
 - 🔒 **High-Availability Self-Hosted Architecture Consulting**
 
-👉 **[Book a Setup & Integration Call](https://upilerify.online/#contact)** or email [`harshavarmabackup@gmail.com`](mailto:harshavarmabackup@gmail.com).
+👉 **[Book a Setup & Integration Call](https://www.upilerify.online/#contact)** or email [`harshavarmabackup@gmail.com`](mailto:harshavarmabackup@gmail.com).
 
 ---
 
