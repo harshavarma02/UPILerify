@@ -94,6 +94,7 @@ Need to generate a payment QR, deep link, or test UPI parameters without install
 
 | Utility | Description | Access |
 | :--- | :--- | :--- |
+| 🧮 **[UPI MDR Fee Calculator](https://www.upilerify.online/tools/upi-mdr-calculator)** | Calculate official 0.40% NPCI MDR fees (effective Oct 15, 2026) and sub-₹2k exemptions. | [**Open Tool →**](https://www.upilerify.online/tools/upi-mdr-calculator) |
 | 💰 **[UPI QR Code with Amount](https://www.upilerify.online/tools/upi-qr-code-with-amount)** | Generate fixed-amount payment QR codes that lock the invoice total upon scanning. | [**Open Tool →**](https://www.upilerify.online/tools/upi-qr-code-with-amount) |
 | 🏦 **[Bank Account to UPI QR](https://www.upilerify.online/tools/bank-account-to-upi-qr-code)** | Convert any Indian account number + IFSC directly into an NPCI QR (zero VPA required). | [**Open Tool →**](https://www.upilerify.online/tools/bank-account-to-upi-qr-code) |
 | 💬 **[WhatsApp UPI Payment Link](https://www.upilerify.online/tools/upi-link-generator)** | Create 1-click WhatsApp payment request links and itemized invoice messages. | [**Open Tool →**](https://www.upilerify.online/tools/upi-link-generator) |
