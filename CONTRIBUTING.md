@@ -33,6 +33,11 @@ npm run dev
 ```
 Open [http://localhost:3000](http://localhost:3000) to access the interactive Developer Console.
 
+### Run Tests
+
+Run `npm test` for the automated regression tests. Webhook tests use isolated
+storage and mocked network requests; no merchant endpoint or real secret is needed.
+
 ---
 
 ## 🏦 Adding Support for a New Bank or PSP

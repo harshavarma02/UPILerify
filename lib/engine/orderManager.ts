@@ -11,7 +11,7 @@
 
 import crypto from 'crypto';
 import { ParsedUPIAlert } from '../parser/multiBankParser';
-import { WebhookDispatcher } from '../webhooks/webhookDispatcher';
+import { dispatchOrderWebhook } from '../webhooks/orderWebhook';
 import type { StorageAdapter } from '../storage/storageAdapter';
 import { SqliteAdapter } from '../storage/sqliteAdapter';
 import { MicroOffsetManager } from './microOffsetManager';
@@ -29,6 +29,7 @@ export * from './types';
 class OrderManager {
   private storage: StorageAdapter;
   private listeners: Set<(event: string, data: any) => void> = new Set();
+  private cleaningExpiredOrders = false;
 
   constructor(storage?: StorageAdapter) {
     this.storage = storage ?? new SqliteAdapter();
@@ -223,33 +224,7 @@ class OrderManager {
 
     this.emitEvent('payment_verified', { order, alert });
 
-    if (order.webhookUrl) {
-      WebhookDispatcher.dispatch(order.webhookUrl, {
-        event: 'payment.verified',
-        timestamp: Date.now(),
-        order: {
-          id: order.id,
-          amount: order.baseAmount,
-          expectedAmount: order.expectedAmount,
-          refNote: order.refNote,
-          merchantUpiId: order.merchantUpiId,
-          utr: order.matchedUtr,
-          bank: order.matchedBank,
-          sender: order.matchedSender,
-          verifiedAt: order.verifiedAt,
-          status: order.status,
-          metadata: order.metadata,
-        },
-      }).then(async (res) => {
-        order.webhookStatus = res.success ? 'SENT' : 'FAILED';
-        await this.storage.saveOrder(order);
-        await this.addLog({
-          type: 'WEBHOOK_SENT',
-          message: `Webhook dispatch ${res.success ? 'succeeded' : 'failed'} for order ${order.id}`,
-          details: res,
-        });
-      });
-    }
+    void dispatchOrderWebhook(order, 'payment.verified', this.storage, (log) => this.addLog(log));
 
     return { matched: true, order, tier };
   }
@@ -265,14 +240,23 @@ class OrderManager {
   }
 
   private async cleanupExpiredOrders(): Promise<void> {
-    const now = Date.now();
-    const orders = await this.storage.getAllOrders();
-    for (const order of orders) {
-      if (order.status === 'PENDING' && order.expiresAt < now) {
-        order.status = 'EXPIRED';
-        await this.storage.saveOrder(order);
-        this.emitEvent('order_expired', { orderId: order.id });
+    if (this.cleaningExpiredOrders) return;
+    this.cleaningExpiredOrders = true;
+    try {
+      const now = Date.now();
+      const orders = await this.storage.getAllOrders();
+      for (const candidate of orders) {
+        // Earlier webhook deliveries may have yielded while this order changed.
+        const order = await this.storage.getOrder(candidate.id);
+        if (order?.status === 'PENDING' && order.expiresAt < now) {
+          order.status = 'EXPIRED';
+          await this.storage.saveOrder(order);
+          this.emitEvent('order_expired', { orderId: order.id });
+          await dispatchOrderWebhook(order, 'order.expired', this.storage, (log) => this.addLog(log));
+        }
       }
+    } finally {
+      this.cleaningExpiredOrders = false;
     }
   }
 
