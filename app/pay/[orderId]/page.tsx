@@ -2,11 +2,13 @@
 
 import React, { useEffect, useState, use } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { Clock, ShieldCheck, Smartphone, ArrowLeft } from 'lucide-react';
+import { Clock, ShieldCheck, ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { BrandMarkSvg, BrandBackground } from '@/lib/brand';
+import { buildUpiIntentUri } from '@/lib/payments/upiIntent';
 import { UtrClaimForm } from './components/UtrClaimForm';
+import { UpiAppButtons } from './components/UpiAppButtons';
 
 interface OrderState {
   id: string;
@@ -90,9 +92,13 @@ export default function CheckoutPage({ params }: { params: Promise<{ orderId: st
     );
   }
 
-  const upiIntentUri = `upi://pay?pa=${encodeURIComponent(order.merchantUpiId)}&pn=${encodeURIComponent(
-    order.merchantName
-  )}&am=${order.expectedAmount.toFixed(2)}&cu=INR&tn=${encodeURIComponent(order.refNote)}`;
+  const upiParams = {
+    merchantUpiId: order.merchantUpiId,
+    merchantName: order.merchantName,
+    amount: order.expectedAmount,
+    refNote: order.refNote,
+  };
+  const upiIntentUri = buildUpiIntentUri(upiParams);
 
   return (
     <div className="min-h-screen bg-slate-50 text-[#0A0F1D] flex flex-col font-sans selection:bg-cyan-500/20 selection:text-cyan-800">
@@ -171,13 +177,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ orderId: st
               <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 shadow-inner flex items-center justify-center mx-auto max-w-[220px] opacity-60">
                 <QRCodeSVG value={upiIntentUri} size={185} level="M" />
               </div>
-              <a
-                href={upiIntentUri}
-                className="w-full py-3.5 px-4 rounded-2xl bg-[#0A0F1D]/80 hover:bg-[#0066FF] text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-slate-900/10 transition-all duration-200 cursor-pointer"
-              >
-                <Smartphone className="w-4 h-4 text-[#00D2FF]" />
-                <span>Pay Again with UPI App</span>
-              </a>
+              <UpiAppButtons params={upiParams} compact />
             </div>
           ) : (
             /* Pending State */
@@ -188,14 +188,8 @@ export default function CheckoutPage({ params }: { params: Promise<{ orderId: st
                 <QRCodeSVG value={upiIntentUri} size={185} level="M" />
               </div>
 
-              {/* Mobile Pay Deep Link Button */}
-              <a
-                href={upiIntentUri}
-                className="w-full py-3.5 px-4 rounded-2xl bg-[#0A0F1D] hover:bg-[#0066FF] text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-slate-900/10 transition-all duration-200 cursor-pointer"
-              >
-                <Smartphone className="w-4 h-4 text-[#00D2FF]" />
-                <span>Pay with GPay / PhonePe / Paytm</span>
-              </a>
+              {/* Dedicated UPI App Deep Links & Fallback Button */}
+              <UpiAppButtons params={upiParams} />
 
               {/* Awaiting Confirmation Badge */}
               <div className="flex items-center justify-between p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs">
