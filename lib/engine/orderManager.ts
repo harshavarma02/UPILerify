@@ -12,6 +12,7 @@
 import crypto from 'crypto';
 import { ParsedUPIAlert } from '../parser/multiBankParser';
 import { dispatchOrderWebhook } from '../webhooks/orderWebhook';
+import { buildUpiIntentUri } from '../payments/upiIntent';
 import type { StorageAdapter } from '../storage/storageAdapter';
 import { SqliteAdapter } from '../storage/sqliteAdapter';
 import { MicroOffsetManager } from './microOffsetManager';
@@ -91,9 +92,12 @@ class OrderManager {
 
     await this.storage.saveOrder(order);
 
-    const upiIntentUri = `upi://pay?pa=${encodeURIComponent(merchantUpiId)}&pn=${encodeURIComponent(
-      merchantName
-    )}&am=${expectedAmount.toFixed(2)}&cu=INR&tn=${encodeURIComponent(refCode)}`;
+    const upiIntentUri = buildUpiIntentUri({
+      merchantUpiId,
+      merchantName,
+      amount: expectedAmount,
+      refNote: refCode,
+    });
 
     await this.addLog({
       type: 'ORDER_CREATED',
